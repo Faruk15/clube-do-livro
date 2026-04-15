@@ -123,6 +123,73 @@ func TestLoginLogoutFlow(t *testing.T) {
 	require.Equal(t, http.StatusFound, rr.Code)
 }
 
+func TestSignupCriaContaEFazAutoLogin(t *testing.T) {
+	s := newAuthStore()
+	auth := service.NewAuth(s)
+	h := &authHandler{d: Deps{Auth: auth}}
+
+	form := "name=Marina&email=marina@clube.local&password=segredo123&password_confirm=segredo123"
+	req := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	h.doSignup(rr, req)
+
+	require.Equal(t, http.StatusFound, rr.Code, "deve redirecionar após criar conta")
+	require.Equal(t, "/", rr.Header().Get("Location"))
+
+	var token string
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == middleware.CookieName {
+			token = c.Value
+		}
+	}
+	require.NotEmpty(t, token, "deve setar cookie de sessão (auto-login)")
+
+	// Membro persistido como não-admin.
+	m, err := s.GetMemberByEmail(context.Background(), "marina@clube.local")
+	require.NoError(t, err)
+	require.False(t, m.IsAdmin, "auto-cadastro nunca cria admin")
+	require.Equal(t, "Marina", m.Name)
+}
+
+func TestSignupRejeitaSenhasDiferentes(t *testing.T) {
+	s := newAuthStore()
+	auth := service.NewAuth(s)
+	h := &authHandler{d: Deps{Auth: auth}}
+
+	form := "name=A&email=a@x.com&password=abcdef&password_confirm=zzzzzz"
+	req := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	h.doSignup(rr, req)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "não coincidem")
+	_, err := s.GetMemberByEmail(context.Background(), "a@x.com")
+	require.Error(t, err, "nada deve ter sido persistido")
+}
+
+func TestSignupRejeitaEmailDuplicado(t *testing.T) {
+	ctx := context.Background()
+	s := newAuthStore()
+	hash, _ := bcrypt.GenerateFromPassword([]byte("xxxxxx"), bcrypt.DefaultCost)
+	require.NoError(t, s.CreateMember(ctx, &model.Member{
+		ID: uuid.New(), Name: "Já existe", Email: "dup@x.com", PasswordHash: string(hash),
+	}))
+
+	auth := service.NewAuth(s)
+	h := &authHandler{d: Deps{Auth: auth}}
+
+	form := "name=Outro&email=dup@x.com&password=abcdef&password_confirm=abcdef"
+	req := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	h.doSignup(rr, req)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "Já existe uma conta")
+}
+
 func TestRequireAuthRedirecionaSemCookie(t *testing.T) {
 	s := newAuthStore()
 	auth := service.NewAuth(s)
