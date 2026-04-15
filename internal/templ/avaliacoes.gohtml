@@ -1,0 +1,12 @@
+{{define "content"}}
+<h2 class="page-title">Avaliações</h2>
+
+{{with .Data}}
+{{if .Lidos}}
+<div class="grid">{{range .Lidos}}{{template "bookcard" .}}{{end}}</div>
+{{else}}
+<p style="color:var(--muted)">Ainda não temos livros marcados como lidos. Assim que o clube terminar uma leitura, ela aparece aqui para avaliar.</p>
+{{end}}
+{{end}}
+{{end}}
+{{define "avaliacoes"}}{{template "layout" .}}{{end}}

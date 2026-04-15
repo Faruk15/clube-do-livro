@@ -1,0 +1,39 @@
+{{define "content"}}
+<h2 class="page-title">Dashboard</h2>
+
+{{with .Data}}
+<div class="section">
+  <h3>📖 Lendo agora</h3>
+  {{if .Lendo}}
+  <div class="grid">
+    {{range .Lendo}}
+      {{template "bookcard" .}}
+    {{end}}
+  </div>
+  {{else}}
+  <p style="color:var(--muted)">Nenhum livro em leitura no momento.</p>
+  {{end}}
+</div>
+
+<div class="section">
+  <h3>🗳️ Rodada de votação</h3>
+  {{if .RodadaAberta}}
+    <p>Há uma rodada aberta com <strong>{{len .RodadaLivros}}</strong> livros. <a href="/votacao">Ir votar</a></p>
+  {{else}}
+    <p style="color:var(--muted)">Nenhuma rodada aberta.</p>
+  {{end}}
+</div>
+
+<div class="section">
+  <h3>📅 Próximo encontro</h3>
+  {{if .Proximo}}
+    <p><strong>{{.Proximo.Title}}</strong> — {{fmtDateTime .Proximo.Datetime}}<br>
+    {{.Proximo.Location}}</p>
+    <a class="btn btn-ghost" href="/encontros/{{uuidStr .Proximo.ID}}">Ver detalhes</a>
+  {{else}}
+    <p style="color:var(--muted)">Nenhum encontro agendado.</p>
+  {{end}}
+</div>
+{{end}}
+{{end}}
+{{define "dashboard"}}{{template "layout" .}}{{end}}

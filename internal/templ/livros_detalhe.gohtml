@@ -1,0 +1,98 @@
+{{define "content"}}
+{{with .Data}}
+<h2 class="page-title">{{.Book.Title}}
+  <span class="badge badge-{{.Book.Status}}">{{statusLabel .Book.Status}}</span>
+</h2>
+
+<div class="section" style="display:flex;gap:22px;flex-wrap:wrap">
+  {{if .Book.CoverURL}}<img src="{{.Book.CoverURL}}" style="width:160px;border-radius:10px">{{end}}
+  <div style="flex:1;min-width:220px">
+    <p><strong>{{.Book.Author}}</strong><br>
+    {{.Book.Publisher}} · {{.Book.Year}}{{if .Book.Pages}} · {{.Book.Pages}} páginas{{end}}</p>
+    <p>{{.Book.Synopsis}}</p>
+    <div class="tags">{{range .Book.Tags}}<span class="tag">{{.}}</span>{{end}}</div>
+    <form method="post" action="/livros/{{uuidStr .Book.ID}}/tag" class="form" style="margin-top:12px;max-width:360px">
+      <div class="row">
+        <input name="tag" placeholder="Nova tag (ex.: ficção)" required>
+        <button class="btn btn-ghost" type="submit">+ tag</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{if .CanReview}}
+<div class="section">
+  <h3>Minha avaliação</h3>
+  <form method="post" action="/avaliacoes" class="form">
+    <input type="hidden" name="book_id" value="{{uuidStr .Book.ID}}">
+    <label>Nota geral (1-5, opcional)
+      <select name="nota_geral">
+        <option value="">—</option>
+        {{range $i := .Ratings}}<option {{if eq (ifnil $.Data.Minha.NotaGeral) $i}}selected{{end}} value="{{$i}}">{{$i}} estrelas</option>{{end}}
+      </select>
+    </label>
+    <label>Nota escrita (opcional)
+      <select name="nota_escrita">
+        <option value="">—</option>
+        {{range $i := .Ratings}}<option {{if eq (ifnil $.Data.Minha.NotaEscrita) $i}}selected{{end}} value="{{$i}}">{{$i}}</option>{{end}}
+      </select>
+    </label>
+    <label>Nota enredo (opcional)
+      <select name="nota_enredo">
+        <option value="">—</option>
+        {{range $i := .Ratings}}<option {{if eq (ifnil $.Data.Minha.NotaEnredo) $i}}selected{{end}} value="{{$i}}">{{$i}}</option>{{end}}
+      </select>
+    </label>
+    <label>Expectativa vs realidade (opcional)
+      <select name="nota_expectativa">
+        <option value="">—</option>
+        {{range $i := .Ratings}}<option {{if eq (ifnil $.Data.Minha.NotaExpectativa) $i}}selected{{end}} value="{{$i}}">{{$i}}</option>{{end}}
+      </select>
+    </label>
+    <label>Review (opcional)
+      <textarea name="review_text" placeholder="O que achou?">{{if .Minha}}{{.Minha.ReviewText}}{{end}}</textarea>
+    </label>
+    <div class="row">
+      <label><input type="checkbox" name="has_spoiler" value="1" {{if and .Minha .Minha.HasSpoiler}}checked{{end}}> contém spoiler</label>
+    </div>
+    <label>Citação favorita (opcional)
+      <textarea name="citacao" placeholder="Trecho marcante...">{{if .Minha}}{{.Minha.Citacao}}{{end}}</textarea>
+    </label>
+    <button class="btn" type="submit">Salvar avaliação</button>
+  </form>
+</div>
+{{end}}
+
+<div class="section">
+  <h3>Avaliações do clube</h3>
+  {{if .Stats.TotalReviews}}
+  <div class="stat-line">
+    {{if .Stats.CountGeral}}<span>Geral: <span class="stars">{{star .Stats.AvgGeral}}</span> {{fmtAvg .Stats.AvgGeral}} ({{.Stats.CountGeral}})</span>{{end}}
+    {{if .Stats.CountEscrita}}<span>Escrita: {{fmtAvg .Stats.AvgEscrita}}</span>{{end}}
+    {{if .Stats.CountEnredo}}<span>Enredo: {{fmtAvg .Stats.AvgEnredo}}</span>{{end}}
+    {{if .Stats.CountExpectativa}}<span>Expectativa: {{fmtAvg .Stats.AvgExpectativa}}</span>{{end}}
+    <span>({{.Stats.TotalReviews}} {{if eq .Stats.TotalReviews 1}}review{{else}}reviews{{end}})</span>
+  </div>
+  {{range .Reviews}}
+    <div style="border-top:1px solid var(--row-border);padding-top:12px;margin-top:12px">
+      <div class="stat-line">
+        {{if .NotaGeral}}<span class="stars">{{stars (ifnil .NotaGeral)}}</span>{{end}}
+        <span style="color:var(--muted)">{{fmtDate .CreatedAt}}</span>
+      </div>
+      {{if .ReviewText}}
+        {{if .HasSpoiler}}
+          <p><span class="spoiler" onclick="this.classList.toggle('open')" title="clique para revelar">⚠ spoiler — clique para ler: {{.ReviewText}}</span></p>
+        {{else}}
+          <p>{{.ReviewText}}</p>
+        {{end}}
+      {{end}}
+      {{if .Citacao}}<blockquote style="margin:6px 0;color:var(--muted);border-left:3px solid var(--dourado);padding-left:10px">“{{.Citacao}}”</blockquote>{{end}}
+    </div>
+  {{end}}
+  {{else}}
+  <p style="color:var(--muted)">Nenhuma avaliação ainda.</p>
+  {{end}}
+</div>
+{{end}}
+{{end}}
+{{define "livros_detalhe"}}{{template "layout" .}}{{end}}

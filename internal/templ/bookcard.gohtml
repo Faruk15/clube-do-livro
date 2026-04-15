@@ -1,0 +1,17 @@
+{{define "bookcard"}}
+<a class="card" href="/livros/{{uuidStr .ID}}">
+  <div class="cover">
+    {{if .CoverURL}}<img src="{{.CoverURL}}" alt="">{{else}}<span>sem capa</span>{{end}}
+  </div>
+  <div class="body">
+    <h3>{{.Title}}</h3>
+    <div class="author">{{.Author}}</div>
+    <span class="badge badge-{{.Status}}">{{statusLabel .Status}}</span>
+    {{if .Tags}}
+    <div class="tags">
+      {{range .Tags}}<span class="tag">{{.}}</span>{{end}}
+    </div>
+    {{end}}
+  </div>
+</a>
+{{end}}

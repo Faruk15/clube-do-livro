@@ -1,0 +1,56 @@
+{{define "content"}}
+<h2 class="page-title">Administração</h2>
+{{with .Data}}
+<div class="section">
+  <h3>Membros</h3>
+  <form method="post" action="/admin/membros" class="form">
+    <div class="row">
+      <input name="name" placeholder="Nome" required>
+      <input name="email" placeholder="E-mail" type="email" required>
+      <input name="password" placeholder="Senha" required>
+      <label style="flex-direction:row;gap:4px"><input type="checkbox" name="is_admin" value="1"> admin</label>
+      <button class="btn" type="submit">+ adicionar</button>
+    </div>
+  </form>
+  <table class="simple">
+    <tr><th>Nome</th><th>E-mail</th><th>Admin</th></tr>
+    {{range .Members}}<tr><td>{{.Name}}</td><td>{{.Email}}</td><td>{{if .IsAdmin}}sim{{else}}—{{end}}</td></tr>{{end}}
+  </table>
+</div>
+
+<div class="section">
+  <h3>Rodada de votação</h3>
+  {{if .Aberta}}
+    <p>Há uma rodada aberta com {{len .Candidatos}} livros.</p>
+    <form method="post" action="/admin/votacao/encerrar"><button class="btn btn-warn" type="submit">Encerrar rodada</button></form>
+  {{else}}
+    <form method="post" action="/admin/votacao/abrir" class="form">
+      <p>Selecione os livros candidatos (precisa de pelo menos 2):</p>
+      {{range .Sugeridos}}
+      <label style="flex-direction:row;gap:6px">
+        <input type="checkbox" name="book_ids" value="{{uuidStr .ID}}"> {{.Title}} — {{.Author}}
+      </label>
+      {{end}}
+      <button class="btn" type="submit">Abrir rodada</button>
+    </form>
+  {{end}}
+</div>
+
+<div class="section">
+  <h3>Marcar leitura como concluída</h3>
+  {{if .LendoAgora}}
+  <form method="post" action="/admin/livros/concluir" class="form">
+    <label>Livro em leitura
+      <select name="book_id" required>
+        {{range .LendoAgora}}<option value="{{uuidStr .ID}}">{{.Title}}</option>{{end}}
+      </select>
+    </label>
+    <button class="btn btn-warn" type="submit">Marcar como lido</button>
+  </form>
+  {{else}}
+  <p style="color:var(--muted)">Nenhum livro sendo lido atualmente.</p>
+  {{end}}
+</div>
+{{end}}
+{{end}}
+{{define "admin"}}{{template "layout" .}}{{end}}

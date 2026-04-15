@@ -1,0 +1,30 @@
+{{define "fragment_buscar"}}
+{{if .Results}}
+<div class="section">
+  <h3>Resultados</h3>
+  {{range .Results}}
+    <form method="post" action="/livros/sugerir" class="form" style="border-bottom:1px solid var(--row-border);padding-bottom:18px;margin-bottom:18px">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        {{if .CoverURL}}<img src="{{.CoverURL}}" style="width:80px;border-radius:8px">{{end}}
+        <div style="flex:1">
+          <strong>{{.Title}}</strong><br>
+          <span style="color:var(--muted)">{{.Author}} · {{.Publisher}} · {{.Year}}</span>
+          <p style="margin:6px 0;font-size:.9rem">{{.Synopsis}}</p>
+          <small style="color:var(--muted)">fonte: {{.Source}}</small>
+        </div>
+      </div>
+      <input type="hidden" name="title" value="{{.Title}}">
+      <input type="hidden" name="author" value="{{.Author}}">
+      <input type="hidden" name="cover_url" value="{{.CoverURL}}">
+      <input type="hidden" name="synopsis" value="{{.Synopsis}}">
+      <input type="hidden" name="publisher" value="{{.Publisher}}">
+      <input type="hidden" name="year" value="{{.Year}}">
+      <input type="hidden" name="pages" value="{{.Pages}}">
+      <button class="btn" type="submit">Sugerir este livro</button>
+    </form>
+  {{end}}
+</div>
+{{else}}
+<p style="color:var(--muted)">Nenhum resultado encontrado.</p>
+{{end}}
+{{end}}

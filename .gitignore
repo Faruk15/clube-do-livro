@@ -1,0 +1,52 @@
+# Binários e artefatos de build
+/bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Variáveis de ambiente locais (segredos!)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Cobertura e relatórios de teste
+coverage.out
+coverage.html
+*.test
+*.out
+
+# Cache do Go
+/go-build/
+/.cache/
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Configuração local do Claude / agentes
+.claude/
+CLAUDE.local.md
+
+# Volumes/dados do Docker (caso sejam montados localmente)
+/data/
+/postgres-data/
+
+# Arquivos temporários
+/tmp/
+*.tmp
+*.bak

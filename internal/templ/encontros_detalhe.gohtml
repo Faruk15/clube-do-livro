@@ -1,0 +1,41 @@
+{{define "content"}}
+{{with .Data}}
+<h2 class="page-title">{{.Meeting.Title}}</h2>
+<div class="section">
+  <p><strong>{{fmtDateTime .Meeting.Datetime}}</strong><br>{{.Meeting.Location}}</p>
+  {{if .Book}}<p>Livro: <a href="/livros/{{uuidStr .Book.ID}}">{{.Book.Title}}</a></p>{{end}}
+
+  <form method="post" action="/encontros/{{uuidStr .Meeting.ID}}/presenca" class="form">
+    <label>Minha presença
+      <select name="status">
+        <option value="confirmado" {{if eq .MinhaPresenca "confirmado"}}selected{{end}}>confirmado</option>
+        <option value="talvez" {{if eq .MinhaPresenca "talvez"}}selected{{end}}>talvez</option>
+        <option value="nao_vou" {{if eq .MinhaPresenca "nao_vou"}}selected{{end}}>não vou</option>
+      </select>
+    </label>
+    <button class="btn" type="submit">Atualizar presença</button>
+  </form>
+</div>
+
+<div class="section">
+  <h3>Confirmados ({{.Totais.Confirmado}} ✅ · {{.Totais.Talvez}} 🤔 · {{.Totais.NaoVou}} ❌)</h3>
+  <div class="pill-list">
+    {{range .Attendances}}
+      <span class="tag">{{.Name}} — {{presencaLabel .Status}}</span>
+    {{end}}
+  </div>
+</div>
+
+<div class="section">
+  <h3>📝 Pauta colaborativa</h3>
+  <ul>
+    {{range .Agenda}}<li><strong>{{.Author}}:</strong> {{.Content}}</li>{{end}}
+  </ul>
+  <form method="post" action="/encontros/{{uuidStr .Meeting.ID}}/pauta" class="form">
+    <label>Sugerir tópico<textarea name="content" required placeholder="O que você gostaria de discutir?"></textarea></label>
+    <button class="btn btn-secondary" type="submit">Adicionar à pauta</button>
+  </form>
+</div>
+{{end}}
+{{end}}
+{{define "encontros_detalhe"}}{{template "layout" .}}{{end}}

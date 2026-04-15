@@ -1,0 +1,19 @@
+{{define "content"}}
+<h2 class="page-title">Novo encontro</h2>
+
+{{with .Data}}
+<form method="post" action="/encontros" class="form">
+  <label>Título<input name="title" required></label>
+  <label>Data e hora<input type="datetime-local" name="datetime" required></label>
+  <label>Local (ou link)<input name="location" placeholder="Café da esquina, ou https://..."></label>
+  <label>Livro relacionado (opcional)
+    <select name="book_id">
+      <option value="">—</option>
+      {{range .Books}}<option value="{{uuidStr .ID}}">{{.Title}}</option>{{end}}
+    </select>
+  </label>
+  <button class="btn" type="submit">Agendar</button>
+</form>
+{{end}}
+{{end}}
+{{define "encontros_novo"}}{{template "layout" .}}{{end}}

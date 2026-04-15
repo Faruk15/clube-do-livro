@@ -1,0 +1,22 @@
+{{define "content"}}
+<h2 class="page-title">Histórico de leituras</h2>
+{{with .Data}}
+{{if .Books}}
+<div class="section">
+  <table class="simple">
+    <tr><th>Livro</th><th>Autor</th><th>Terminado em</th></tr>
+    {{range .Books}}
+    <tr>
+      <td><a href="/livros/{{uuidStr .ID}}">{{.Title}}</a></td>
+      <td>{{.Author}}</td>
+      <td>{{if .FinishedAt}}{{fmtDate .FinishedAt.UTC}}{{end}}</td>
+    </tr>
+    {{end}}
+  </table>
+</div>
+{{else}}
+<p style="color:var(--muted)">O clube ainda não terminou nenhum livro.</p>
+{{end}}
+{{end}}
+{{end}}
+{{define "historico"}}{{template "layout" .}}{{end}}

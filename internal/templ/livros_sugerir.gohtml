@@ -1,0 +1,17 @@
+{{define "content"}}
+<h2 class="page-title">Sugerir um livro</h2>
+
+<p style="color:var(--muted)">Digite o título ou ISBN. Buscamos os dados automaticamente no Google Books (com fallback para Open Library).</p>
+
+<div class="section">
+  <form class="form" hx-post="/livros/buscar" hx-target="#resultados" hx-swap="innerHTML">
+    <label>Título ou ISBN
+      <input name="q" required placeholder="Ex.: 1984, ou 978-8535914849">
+    </label>
+    <button class="btn btn-secondary" type="submit">🔍 Buscar</button>
+  </form>
+</div>
+
+<div id="resultados"></div>
+{{end}}
+{{define "livros_sugerir"}}{{template "layout" .}}{{end}}

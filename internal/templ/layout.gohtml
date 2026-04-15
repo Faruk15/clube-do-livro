@@ -1,0 +1,266 @@
+{{define "layout"}}<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>{{.Title}} · Clube do Livro</title>
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<style>
+:root{
+  /* Paleta de acento — ajustada para legibilidade sobre fundo escuro */
+  --coral:#ff8472;
+  --esmeralda:#3ee084;
+  --roxo:#9b7dff;
+  --dourado:#f5cf3a;
+  --azul:#5b8cff;        /* novo: link/realce no tema azul-noite */
+  --azul-claro:#7da4ff;
+
+  /* Estrutura — mescla de azul profundo e preto */
+  --bg:#05070f;          /* fundo do app (quase preto, leve tom azul) */
+  --card:#0e1730;        /* cartões/sections (azul-marinho profundo) */
+  --card-2:#13203f;      /* superfície ligeiramente elevada */
+  --cover-bg:#162042;    /* placeholder de capa de livro */
+  --input-bg:#070c1a;    /* inputs: mais escuros que o card para contraste */
+
+  --text:#e6ecfb;        /* texto principal — branco levemente azulado */
+  --text-strong:#ffffff;
+  --muted:#7d88a8;       /* texto secundário em tom cinza-azulado */
+
+  --border:#1d2849;      /* borda padrão de cards/inputs */
+  --border-strong:#2a3866;
+  --row-border:#172146;  /* divisórias de tabela, mais discretas */
+
+  --shadow:0 6px 18px rgba(0,0,0,.55);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.65);
+  --radius:14px;
+
+  --spoiler-bg:#04060d;
+
+  /* Mensagens flash em tom âmbar quente para destacar do azul */
+  --flash-bg:#2e2208;
+  --flash-border:#5d4416;
+  --flash-text:#f5d878;
+
+  --tag-bg:#192349;
+  --backdrop:rgba(2,4,10,.7);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  color:var(--text);background:var(--bg);line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--azul-claro);text-decoration:none}
+a:hover{color:#a8c2ff;text-decoration:underline}
+
+::selection{background:rgba(91,140,255,.35);color:#fff}
+
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* Sidebar: azul escuro mesclado com preto, gradiente vertical sutil */
+.sidebar{
+  background:linear-gradient(180deg,#0f1d44 0%,#0a132e 45%,#050912 100%);
+  color:var(--text-strong);
+  padding:24px 18px;
+  display:flex;flex-direction:column;
+  border-right:1px solid #0a1024;
+  box-shadow:1px 0 0 rgba(255,255,255,.03) inset, var(--shadow-lg);
+}
+.sidebar h1{
+  font-size:1.2rem;margin:0 0 22px;font-weight:700;letter-spacing:.3px;
+  color:#eef2ff;
+}
+.sidebar nav{display:flex;flex-direction:column;gap:2px}
+.sidebar nav a{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;color:#cfd7ee;font-weight:500;
+  min-height:44px;
+  transition:background .15s ease,color .15s ease;
+}
+.sidebar nav a:hover{background:rgba(123,162,255,.10);color:#fff;text-decoration:none}
+.sidebar nav a.active{
+  background:rgba(91,140,255,.18);
+  color:#fff;
+  box-shadow:inset 3px 0 0 var(--azul);
+}
+.sidebar .user{
+  margin-top:auto;font-size:.85rem;color:#aab4d2;
+  border-top:1px solid rgba(255,255,255,.06);padding-top:14px;
+}
+.sidebar .user strong{color:#eef2ff}
+.sidebar .user a{color:var(--azul-claro)}
+
+.sidebar-backdrop{
+  display:none;position:fixed;inset:0;background:var(--backdrop);
+  z-index:9;opacity:0;transition:opacity .2s ease;
+}
+.sidebar-backdrop.show{display:block;opacity:1}
+
+.main{padding:28px 32px 60px;max-width:1100px;width:100%;min-width:0}
+
+/* Topbar só serve para o hamburger no mobile — invisível no desktop */
+.topbar{display:none}
+.hamb{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--card-2);color:var(--text);
+  border:1px solid var(--border);
+  padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;
+  min-height:44px;
+}
+.hamb:hover{background:#1a2a52;border-color:var(--border-strong)}
+
+.page-title{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+h2.page-title{font-size:1.6rem;font-weight:700;color:#f1f4ff}
+
+.flash{background:var(--flash-bg);border:1px solid var(--flash-border);color:var(--flash-text);padding:10px 14px;border-radius:10px;margin-bottom:16px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.card:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--shadow-lg)}
+.card .cover{background:var(--cover-bg);aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.card .cover img{width:100%;height:100%;object-fit:cover}
+.card .body{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{margin:0;font-size:1rem;line-height:1.25;color:#eaeefc}
+.card .author{color:var(--muted);font-size:.85rem}
+
+/* Badges de status — fundos escuros saturados, texto vibrante */
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.badge-sugerido{background:#0f2e1d;color:#5fdb96}
+.badge-em_votacao{background:#1d1c44;color:#b2a4ff}
+.badge-lendo_agora{background:#2e1f08;color:#ffba6f}
+.badge-lido{background:#2a1014;color:#ff8077}
+
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{background:var(--tag-bg);color:var(--azul-claro);padding:2px 8px;border-radius:999px;font-size:.75rem;border:1px solid rgba(91,140,255,.18)}
+
+/* Botões — accents vivos sobre tema escuro */
+.btn{
+  background:var(--esmeralda);color:#062014;border:none;padding:10px 16px;border-radius:10px;
+  font-weight:700;cursor:pointer;font-size:.95rem;transition:filter .12s,transform .08s;
+  min-height:44px;
+}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:translateY(1px)}
+.btn-secondary{background:var(--roxo);color:#0a0420}
+.btn-warn{background:var(--dourado);color:#221700}
+.btn-danger{background:var(--coral);color:#220603}
+.btn-ghost{background:transparent;color:var(--azul-claro);border:1px solid var(--azul);font-weight:600}
+.btn-ghost:hover{background:rgba(91,140,255,.10);filter:none}
+
+/* Forms */
+.form{display:grid;gap:12px;max-width:560px}
+.form label{display:flex;flex-direction:column;gap:4px;font-weight:500;font-size:.9rem;color:#cfd6ee}
+.form input,.form textarea,.form select{
+  padding:10px 12px;border:1px solid var(--border);border-radius:10px;font:inherit;
+  background:var(--input-bg);color:var(--text);
+  transition:border-color .12s ease, box-shadow .12s ease;
+}
+.form input:focus,.form textarea:focus,.form select:focus{
+  outline:none;border-color:var(--azul);
+  box-shadow:0 0 0 3px rgba(91,140,255,.18);
+}
+.form input::placeholder,.form textarea::placeholder{color:#5b6588}
+.form textarea{min-height:90px;resize:vertical}
+.form .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.form .row label{flex-direction:row;align-items:center;gap:6px}
+
+.stars{display:inline-flex;gap:2px;font-size:1.1rem;color:var(--dourado)}
+.stat-line{display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+
+.section{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px;margin:18px 0;
+}
+.section h3{margin-top:0;color:#eaeefc}
+
+table.simple{width:100%;border-collapse:collapse}
+table.simple th,table.simple td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--row-border)}
+table.simple th{color:var(--muted);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.4px}
+table.simple tr:last-child td{border-bottom:none}
+
+.pill-list{display:flex;flex-wrap:wrap;gap:6px}
+
+.spoiler{background:var(--spoiler-bg);color:var(--spoiler-bg);padding:2px 4px;border-radius:4px;cursor:pointer;transition:color .15s}
+.spoiler:hover,.spoiler.open{color:#fff}
+
+img{max-width:100%;height:auto}
+hr{border:none;border-top:1px solid var(--row-border);margin:16px 0}
+
+@media (max-width: 1024px){
+  .main{padding:24px 22px 60px}
+}
+@media (max-width: 760px){
+  .app{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed;inset:0 auto 0 0;width:78%;max-width:300px;
+    transform:translateX(-100%);transition:transform .22s ease;z-index:10;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .main{padding:16px 14px 60px}
+  h2.page-title{font-size:1.35rem}
+  .section{padding:16px}
+  .grid{gap:14px}
+}
+@media (max-width: 480px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+  .card .body{padding:10px 12px}
+  .card h3{font-size:.95rem}
+  .stat-line{gap:10px;font-size:.85rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar-backdrop" id="sb-bd" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sb">
+    <h1>📚 Clube do Livro</h1>
+    {{if .Me}}
+    <nav>
+      <a href="/" class="{{if eq .Active "dashboard"}}active{{end}}">🏠 Dashboard</a>
+      <a href="/livros" class="{{if eq .Active "livros"}}active{{end}}">📖 Livros</a>
+      <a href="/votacao" class="{{if eq .Active "votacao"}}active{{end}}">🗳️ Votação</a>
+      <a href="/avaliacoes" class="{{if eq .Active "avaliacoes"}}active{{end}}">⭐ Avaliações</a>
+      <a href="/encontros" class="{{if eq .Active "encontros"}}active{{end}}">📅 Encontros</a>
+      <a href="/historico" class="{{if eq .Active "historico"}}active{{end}}">📜 Histórico</a>
+      {{if .Me.IsAdmin}}<a href="/admin" class="{{if eq .Active "admin"}}active{{end}}">⚙️ Admin</a>{{end}}
+    </nav>
+    <div style="flex:1"></div>
+    <div class="user">
+      Olá, <strong>{{.Me.Name}}</strong>{{if .Me.IsAdmin}} (admin){{end}}<br>
+      <a href="/logout">sair</a>
+    </div>
+    {{end}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <button class="hamb" type="button" onclick="toggleSidebar()" aria-label="Abrir menu">☰ menu</button>
+    </div>
+    {{if .Flash}}<div class="flash">{{.Flash}}</div>{{end}}
+    {{template "content" .}}
+  </main>
+</div>
+<script>
+function toggleSidebar(){
+  var sb = document.getElementById('sb');
+  var bd = document.getElementById('sb-bd');
+  var open = sb.classList.toggle('open');
+  bd.classList.toggle('show', open);
+}
+function closeSidebar(){
+  document.getElementById('sb').classList.remove('open');
+  document.getElementById('sb-bd').classList.remove('show');
+}
+</script>
+</body>
+</html>{{end}}

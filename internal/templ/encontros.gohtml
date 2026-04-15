@@ -1,0 +1,24 @@
+{{define "content"}}
+<h2 class="page-title">Encontros
+  {{if .Me.IsAdmin}}<a class="btn" href="/encontros/novo">+ Novo encontro</a>{{end}}
+</h2>
+
+{{with .Data}}
+{{if .Meetings}}
+<div class="section">
+  {{range .Meetings}}
+  <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--row-border)">
+    <div>
+      <strong>{{.Title}}</strong><br>
+      <span style="color:var(--muted)">{{fmtDateTime .Datetime}} — {{.Location}}</span>
+    </div>
+    <a class="btn btn-ghost" href="/encontros/{{uuidStr .ID}}">ver</a>
+  </div>
+  {{end}}
+</div>
+{{else}}
+<p style="color:var(--muted)">Nenhum encontro agendado.</p>
+{{end}}
+{{end}}
+{{end}}
+{{define "encontros_lista"}}{{template "layout" .}}{{end}}

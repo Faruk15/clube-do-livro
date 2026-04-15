@@ -1,0 +1,13 @@
+{{define "content"}}
+<h2 class="page-title">Livros
+  <a class="btn" href="/livros/sugerir">+ Sugerir livro</a>
+</h2>
+
+{{with .Data}}
+<div class="grid">
+  {{range .Books}}{{template "bookcard" .}}{{end}}
+</div>
+{{if not .Books}}<p style="color:var(--muted)">Ainda não há livros.</p>{{end}}
+{{end}}
+{{end}}
+{{define "livros_list"}}{{template "layout" .}}{{end}}

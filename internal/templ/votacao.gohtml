@@ -1,0 +1,43 @@
+{{define "content"}}
+<h2 class="page-title">Votação</h2>
+
+{{with .Data}}
+{{if .Aberta}}
+<div class="section">
+  <p>Rodada aberta — vote no livro da sua preferência. A contagem fica oculta até o encerramento.</p>
+  {{if .MinhaEscolha}}<p>✅ Seu voto atual: <strong>{{.MinhaEscolhaTitulo}}</strong> (você pode trocar antes do encerramento).</p>{{end}}
+  <div class="grid">
+    {{range .Livros}}
+    <form method="post" action="/votacao/votar" class="card" style="border:{{if eq (uuidPtr $.Data.MinhaEscolha) (uuidStr .ID)}}3px solid var(--esmeralda){{else}}none{{end}}">
+      <div class="cover">{{if .CoverURL}}<img src="{{.CoverURL}}" alt="">{{end}}</div>
+      <div class="body">
+        <h3>{{.Title}}</h3>
+        <div class="author">{{.Author}}</div>
+        <input type="hidden" name="round_id" value="{{uuidStr $.Data.Round.ID}}">
+        <input type="hidden" name="book_id" value="{{uuidStr .ID}}">
+        <button class="btn" type="submit">Votar</button>
+      </div>
+    </form>
+    {{end}}
+  </div>
+</div>
+{{else}}
+<div class="section">
+  <p style="color:var(--muted)">Nenhuma rodada em andamento no momento.</p>
+</div>
+{{end}}
+
+{{if .UltimaApuracao}}
+<div class="section">
+  <h3>Última apuração</h3>
+  <table class="simple">
+    <tr><th>Livro</th><th>Votos</th></tr>
+    {{range .UltimaApuracao}}
+    <tr><td>{{.Title}}</td><td>{{.Count}}</td></tr>
+    {{end}}
+  </table>
+</div>
+{{end}}
+{{end}}
+{{end}}
+{{define "votacao"}}{{template "layout" .}}{{end}}
