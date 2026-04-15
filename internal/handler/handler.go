@@ -27,6 +27,8 @@ func New(d Deps) http.Handler {
 	r.Get("/login", (&authHandler{d}).showLogin)
 	r.Post("/login", (&authHandler{d}).doLogin)
 	r.Get("/logout", (&authHandler{d}).doLogout)
+	r.Get("/signup", (&authHandler{d}).showSignup)
+	r.Post("/signup", (&authHandler{d}).doSignup)
 
 	// Área autenticada.
 	r.Group(func(r chi.Router) {

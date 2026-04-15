@@ -1,0 +1,25 @@
+{{define "content"}}
+<div class="section" style="max-width:440px;margin:60px auto;padding:32px">
+  <h1 style="margin:0 0 8px;background:linear-gradient(90deg,var(--azul-claro),var(--roxo));-webkit-background-clip:text;background-clip:text;color:transparent">📚 Clube do Livro</h1>
+  <p style="color:var(--muted);margin:0 0 20px">Crie sua conta para participar do clube.</p>
+  <form method="post" action="/signup" class="form">
+    <label>Nome
+      <input name="name" type="text" required autofocus value="{{with .Data}}{{.Name}}{{end}}">
+    </label>
+    <label>E-mail
+      <input name="email" type="email" required value="{{with .Data}}{{.Email}}{{end}}">
+    </label>
+    <label>Senha (mínimo 6 caracteres)
+      <input name="password" type="password" required minlength="6">
+    </label>
+    <label>Confirmar senha
+      <input name="password_confirm" type="password" required minlength="6">
+    </label>
+    <button class="btn" type="submit">Criar conta</button>
+  </form>
+  <p style="margin:18px 0 0;text-align:center;color:var(--muted);font-size:.9rem">
+    Já tem conta? <a href="/login">Entrar</a>
+  </p>
+</div>
+{{end}}
+{{define "signup"}}{{template "layout" .}}{{end}}
