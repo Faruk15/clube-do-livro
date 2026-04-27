@@ -108,6 +108,20 @@ func (h *bookHandler) detail(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *bookHandler) removeSuggestion(w http.ResponseWriter, r *http.Request) {
+	me := middleware.MemberFrom(r.Context())
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if err := h.d.Books.RemoveSuggestion(r.Context(), me, id); err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+	http.Redirect(w, r, "/livros", http.StatusSeeOther)
+}
+
 func (h *bookHandler) addTag(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {

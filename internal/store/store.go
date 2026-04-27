@@ -36,6 +36,8 @@ type BookStore interface {
 	ListBooks(ctx context.Context, statusFilter string) ([]model.Book, error)
 	ListFinished(ctx context.Context) ([]model.Book, error)
 
+	DeleteBook(ctx context.Context, id uuid.UUID) error
+
 	AddTag(ctx context.Context, bookID uuid.UUID, tag string) error
 	RemoveTag(ctx context.Context, bookID uuid.UUID, tag string) error
 	ListTags(ctx context.Context, bookID uuid.UUID) ([]string, error)

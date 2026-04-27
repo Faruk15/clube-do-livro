@@ -11,6 +11,11 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	ErrSemPermissao = errors.New("sem permissão para remover esta sugestão")
+	ErrNaoEhSugestao = errors.New("apenas sugestões podem ser removidas")
+)
+
 // BookService — operações sobre o catálogo.
 type BookService struct {
 	Books store.BookStore
@@ -61,4 +66,18 @@ func (s *BookService) ListFinished(ctx context.Context) ([]model.Book, error) {
 
 func (s *BookService) Get(ctx context.Context, id uuid.UUID) (*model.Book, error) {
 	return s.Books.GetBook(ctx, id)
+}
+
+func (s *BookService) RemoveSuggestion(ctx context.Context, member *model.Member, bookID uuid.UUID) error {
+	b, err := s.Books.GetBook(ctx, bookID)
+	if err != nil {
+		return err
+	}
+	if b.Status != model.StatusSugerido {
+		return ErrNaoEhSugestao
+	}
+	if !member.IsAdmin && (b.SuggestedBy == nil || *b.SuggestedBy != member.ID) {
+		return ErrSemPermissao
+	}
+	return s.Books.DeleteBook(ctx, bookID)
 }

@@ -142,6 +142,31 @@ h2.page-title{font-size:1.6rem;font-weight:700;color:#f1f4ff}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .tag{background:var(--tag-bg);color:var(--azul-claro);padding:2px 8px;border-radius:999px;font-size:.75rem;border:1px solid rgba(91,140,255,.18)}
 
+/* Card wrapper: permite posicionar botão de remoção sobre o card */
+.card-wrap{position:relative}
+.suggested-by{font-size:.75rem;color:var(--muted);padding:4px 10px 8px;text-align:center}
+.btn-remove-suggestion{
+  position:absolute;top:6px;right:6px;
+  width:24px;height:24px;padding:0;
+  background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.35);
+  color:#ff7070;border-radius:6px;font-size:1rem;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .12s,border-color .12s;
+  z-index:1;
+}
+.btn-remove-suggestion:hover{background:rgba(255,80,80,.3);border-color:rgba(255,80,80,.6)}
+
+/* Dialog de confirmação */
+.confirm-dialog{
+  background:var(--card-2);border:1px solid var(--border-strong);
+  border-radius:var(--radius);padding:24px;
+  color:var(--text);max-width:320px;width:90%;
+  box-shadow:var(--shadow-lg);
+}
+.confirm-dialog::backdrop{background:var(--backdrop)}
+.confirm-dialog__msg{margin:0 0 18px;font-size:1rem;font-weight:600;color:var(--text-strong);text-align:center}
+.confirm-dialog__actions{display:flex;gap:10px;justify-content:center}
+
 /* Botões — accents vivos sobre tema escuro */
 .btn{
   background:var(--esmeralda);color:#062014;border:none;padding:10px 16px;border-radius:10px;

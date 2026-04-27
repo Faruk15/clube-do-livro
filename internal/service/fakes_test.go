@@ -161,6 +161,14 @@ func (f *fakeBooks) ListFinished(_ context.Context) ([]model.Book, error) {
 	return f.ListBooks(context.Background(), model.StatusLido)
 }
 
+func (f *fakeBooks) DeleteBook(_ context.Context, id uuid.UUID) error {
+	if _, ok := f.books[id]; !ok {
+		return store.ErrNotFound
+	}
+	delete(f.books, id)
+	return nil
+}
+
 func (f *fakeBooks) AddTag(_ context.Context, bookID uuid.UUID, tag string) error {
 	if _, ok := f.tags[bookID]; !ok {
 		f.tags[bookID] = map[string]bool{}
