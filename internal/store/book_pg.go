@@ -28,8 +28,10 @@ func (p *PG) CreateBook(ctx context.Context, b *model.Book) error {
 
 func (p *PG) GetBook(ctx context.Context, id uuid.UUID) (*model.Book, error) {
 	row := p.Pool.QueryRow(ctx, `
-		SELECT id,title,author,cover_url,synopsis,publisher,year,pages,status,suggested_by,finished_at,created_at
-		FROM books WHERE id=$1`, id)
+		SELECT b.id,b.title,b.author,b.cover_url,b.synopsis,b.publisher,b.year,b.pages,
+		       b.status,b.suggested_by,b.finished_at,b.created_at,m.name
+		FROM books b LEFT JOIN members m ON m.id=b.suggested_by
+		WHERE b.id=$1`, id)
 	b, err := scanBook(row)
 	if err != nil {
 		return nil, err
@@ -48,13 +50,17 @@ type rowScanner interface {
 
 func scanBook(r rowScanner) (*model.Book, error) {
 	var b model.Book
+	var suggestedByName *string
 	err := r.Scan(&b.ID, &b.Title, &b.Author, &b.CoverURL, &b.Synopsis, &b.Publisher,
-		&b.Year, &b.Pages, &b.Status, &b.SuggestedBy, &b.FinishedAt, &b.CreatedAt)
+		&b.Year, &b.Pages, &b.Status, &b.SuggestedBy, &b.FinishedAt, &b.CreatedAt, &suggestedByName)
 	if err != nil {
 		if isNoRows(err) {
 			return nil, ErrNotFound
 		}
 		return nil, err
+	}
+	if suggestedByName != nil {
+		b.SuggestedByName = *suggestedByName
 	}
 	return &b, nil
 }
@@ -66,14 +72,15 @@ func (p *PG) UpdateBookStatus(ctx context.Context, id uuid.UUID, status string, 
 }
 
 func (p *PG) ListBooks(ctx context.Context, statusFilter string) ([]model.Book, error) {
-	query := `SELECT id,title,author,cover_url,synopsis,publisher,year,pages,status,suggested_by,finished_at,created_at
-	          FROM books`
+	query := `SELECT b.id,b.title,b.author,b.cover_url,b.synopsis,b.publisher,b.year,b.pages,
+	                 b.status,b.suggested_by,b.finished_at,b.created_at,m.name
+	          FROM books b LEFT JOIN members m ON m.id=b.suggested_by`
 	args := []any{}
 	if statusFilter != "" {
-		query += ` WHERE status=$1`
+		query += ` WHERE b.status=$1`
 		args = append(args, statusFilter)
 	}
-	query += ` ORDER BY created_at DESC`
+	query += ` ORDER BY b.created_at DESC`
 
 	rows, err := p.Pool.Query(ctx, query, args...)
 	if err != nil {
@@ -93,8 +100,10 @@ func (p *PG) ListBooks(ctx context.Context, statusFilter string) ([]model.Book, 
 
 func (p *PG) ListFinished(ctx context.Context) ([]model.Book, error) {
 	rows, err := p.Pool.Query(ctx, `
-		SELECT id,title,author,cover_url,synopsis,publisher,year,pages,status,suggested_by,finished_at,created_at
-		FROM books WHERE status='lido' ORDER BY finished_at DESC NULLS LAST`)
+		SELECT b.id,b.title,b.author,b.cover_url,b.synopsis,b.publisher,b.year,b.pages,
+		       b.status,b.suggested_by,b.finished_at,b.created_at,m.name
+		FROM books b LEFT JOIN members m ON m.id=b.suggested_by
+		WHERE b.status='lido' ORDER BY b.finished_at DESC NULLS LAST`)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +117,17 @@ func (p *PG) ListFinished(ctx context.Context) ([]model.Book, error) {
 		out = append(out, *b)
 	}
 	return out, rows.Err()
+}
+
+func (p *PG) DeleteBook(ctx context.Context, id uuid.UUID) error {
+	cmd, err := p.Pool.Exec(ctx, `DELETE FROM books WHERE id=$1 AND status='sugerido'`, id)
+	if err != nil {
+		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 func (p *PG) AddTag(ctx context.Context, bookID uuid.UUID, tag string) error {

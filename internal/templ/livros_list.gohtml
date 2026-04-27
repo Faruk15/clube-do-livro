@@ -5,7 +5,29 @@
 
 {{with .Data}}
 <div class="grid">
-  {{range .Books}}{{template "bookcard" .}}{{end}}
+  {{range .Books}}
+  <div class="card-wrap">
+    {{template "bookcard" .}}
+    {{if .SuggestedByName}}
+    <div class="suggested-by">Sugerido por: {{.SuggestedByName}}</div>
+    {{end}}
+    {{if eq .Status "sugerido"}}
+      {{if or $.Me.IsAdmin (eq (uuidPtr .SuggestedBy) (uuidStr $.Me.ID))}}
+      <dialog id="dlg-{{uuidStr .ID}}" class="confirm-dialog">
+        <p class="confirm-dialog__msg">Deseja remover a sugestão?</p>
+        <form method="post" action="/livros/{{uuidStr .ID}}/remover-sugestao" class="confirm-dialog__actions">
+          <button class="btn btn-danger" type="submit">Sim</button>
+          <button class="btn btn-ghost" type="button" onclick="this.closest('dialog').close()">Não</button>
+        </form>
+      </dialog>
+      <button type="button"
+              class="btn-remove-suggestion"
+              title="Remover sugestão"
+              onclick="document.getElementById('dlg-{{uuidStr .ID}}').showModal()">×</button>
+      {{end}}
+    {{end}}
+  </div>
+  {{end}}
 </div>
 {{if not .Books}}<p style="color:var(--muted)">Ainda não há livros.</p>{{end}}
 {{end}}
