@@ -42,6 +42,7 @@ func New(d Deps) http.Handler {
 		r.Post("/livros/buscar", bh.search)
 		r.Post("/livros/sugerir", bh.submitSuggest)
 		r.Get("/livros/{id}", bh.detail)
+		r.Post("/livros/{id}/remover-sugestao", bh.removeSuggestion)
 		r.Post("/livros/{id}/tag", bh.addTag)
 
 		vh := &votingHandler{d}

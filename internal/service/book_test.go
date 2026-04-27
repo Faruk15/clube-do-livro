@@ -28,6 +28,32 @@ func TestBook_SuggestExigeTitulo(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestBook_RemoveSuggestion(t *testing.T) {
+	ctx := context.Background()
+	fb := newFakeBooks()
+	s := NewBook(fb)
+
+	owner := &model.Member{ID: mustUUID()}
+	other := &model.Member{ID: mustUUID()}
+	admin := &model.Member{ID: mustUUID(), IsAdmin: true}
+
+	b, _ := s.Suggest(ctx, owner, &model.Book{Title: "Remover"})
+
+	// outro membro não pode remover
+	require.ErrorIs(t, s.RemoveSuggestion(ctx, other, b.ID), ErrSemPermissao)
+
+	// admin pode remover qualquer sugestão
+	b2, _ := s.Suggest(ctx, owner, &model.Book{Title: "Admin remove"})
+	require.NoError(t, s.RemoveSuggestion(ctx, admin, b2.ID))
+	_, err := fb.GetBook(ctx, b2.ID)
+	require.Error(t, err)
+
+	// dono pode remover a própria sugestão
+	require.NoError(t, s.RemoveSuggestion(ctx, owner, b.ID))
+	_, err = fb.GetBook(ctx, b.ID)
+	require.Error(t, err)
+}
+
 func TestBook_AddTagNormaliza(t *testing.T) {
 	ctx := context.Background()
 	fb := newFakeBooks()

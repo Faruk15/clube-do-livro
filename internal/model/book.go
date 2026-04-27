@@ -25,8 +25,9 @@ type Book struct {
 	Year        int
 	Pages       int
 	Status      string
-	SuggestedBy *uuid.UUID
-	FinishedAt  *time.Time
+	SuggestedBy     *uuid.UUID
+	SuggestedByName string
+	FinishedAt      *time.Time
 	CreatedAt   time.Time
 	Tags        []string
 }
